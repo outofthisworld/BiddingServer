@@ -9,12 +9,17 @@ import java.util.Objects;
  * The type Preconditions.
  */
 public final class Preconditions {
+
+    private Preconditions() {
+    }
+
+    
     /**
      * Check not null.
      *
      * @param className the class name
      * @param object    the object
-     * @throws NullPointerException the null pointer exception
+     * @throws java.lang.NullPointerException the null pointer exception
      */
     public static void checkNotNull(String className, Object object) throws NullPointerException {
         Objects.requireNonNull(object, "Precondition checkNotNull failed " + object.getClass().getName() + " was null when called from " + className);
@@ -27,8 +32,8 @@ public final class Preconditions {
      * @param klazz  the klazz
      * @param object the object
      * @return the t
-     * @throws NullPointerException the null pointer exception
-     * @throws NullPointerException the null pointer exception
+     * @throws java.lang.NullPointerException the null pointer exception
+     * @throws java.lang.ClassCastException the null pointer exception
      */
     public static <T> T tryCast(Class<T> klazz, Object object) throws NullPointerException, ClassCastException {
         if (klazz == null || object == null)
@@ -47,12 +52,14 @@ public final class Preconditions {
      * @param low   the low
      * @param high  the high
      * @param value the value
-     * @throws InvalidArgumentException the invalid argument exception
+     * @throws com.sun.javaws.exceptions.InvalidArgumentException the invalid argument exception
      */
     public static <T extends Number> void valueBetweenInclusive(T low, T high, T value) throws InvalidArgumentException {
         double dblVal = value.doubleValue();
         if (dblVal <= low.doubleValue() || dblVal >= high.doubleValue())
-            throw new InvalidArgumentException(new String[]{"min:" + low.toString(), "high:" + high.toString(), "actual:" + value.toString()});
+            throw new InvalidArgumentException(
+                    new String[]{"min:" + low.toString(), "high:" + high.toString(), "actual:" + value.toString()}
+            );
     }
 
 
@@ -68,6 +75,8 @@ public final class Preconditions {
     public static <T extends Number> void valueBetweenExclusive(T low, T high, T value) throws InvalidArgumentException {
         double dblVal = value.doubleValue();
         if (dblVal < low.doubleValue() || dblVal > high.doubleValue())
-            throw new InvalidArgumentException(new String[]{"min:" + low.toString(), "high:" + high.toString(), "actual:" + value.toString()});
+            throw new InvalidArgumentException(new String[]{
+                    "min:" + low.toString(), "high:" + high.toString(), "actual:" + value.toString()}
+            );
     }
 }
