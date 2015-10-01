@@ -15,6 +15,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class Auction {
 
+    //An static autoIncrementing id used to identify each auction
+    private static final AtomicInteger surrogateAuctionID = new AtomicInteger();
+    //The title of this auction
+    private final String auctionTitle;
+    //The id of this auction, obtained from the surrogate auction id.
+    private final int auctionID;
+    //The auction item belonging to this auction
+    private final AuctionItem auctionItem;
+    //The set of clients viewing this auction
+    private final Set<Client> auctionSessions = Collections.synchronizedSet(new HashSet());
+    //The bids on this auction
+    private final Stack<Bid> auctionBids = new Stack<>();
+    //The client this auction belongs to (may or may not be connected)
+    private Client client;
+    //The type of this auction.
+    private AuctionType auctionType;
+    //Specifies whether or not this auction is running
+    private volatile boolean isRunning;
+    //The duration, represented in seconds, that this auction should run for.
+    private volatile long duration;
+    //The bid count of this auction
+    private int bidCount = 0;
+
     /**
      * Instantiates a new Auction.
      *
@@ -25,12 +48,12 @@ public final class Auction {
      * @param timeUnit the time unit
      * @param auctionType the auction type
      */
-    public Auction(Client client,String auctionTitle, AuctionItem auctionItem, long duration, TimeUnit timeUnit,AuctionType auctionType){
+    public Auction(Client client, String auctionTitle, AuctionItem auctionItem, long duration, TimeUnit timeUnit, AuctionType auctionType) {
         this.client = client;
         this.isRunning = true;
         this.auctionTitle = auctionTitle;
         this.auctionItem = auctionItem;
-        this.duration = TimeUnit.SECONDS.convert(duration,timeUnit);
+        this.duration = TimeUnit.SECONDS.convert(duration, timeUnit);
         this.auctionID = surrogateAuctionID.incrementAndGet();
         this.auctionType = auctionType;
     }
@@ -40,7 +63,7 @@ public final class Auction {
      *
      * @return the int
      */
-    public int getAuctionID(){
+    public int getAuctionID() {
         return auctionID;
     }
 
@@ -49,7 +72,7 @@ public final class Auction {
      *
      * @return the string
      */
-    public String getAuctionTitle(){
+    public String getAuctionTitle() {
         return auctionTitle;
     }
 
@@ -58,7 +81,7 @@ public final class Auction {
      *
      * @param client the client
      */
-    public void newViewer(Client client){
+    public void newViewer(Client client) {
         auctionSessions.add(client);
     }
 
@@ -67,7 +90,7 @@ public final class Auction {
      *
      * @param client the client
      */
-    public void removeViewer(Client client){
+    public void removeViewer(Client client) {
         auctionSessions.remove(client);
     }
 
@@ -76,7 +99,7 @@ public final class Auction {
      *
      * @return the client
      */
-    public Client getHighestBidder(){
+    public Client getHighestBidder() {
         return auctionBids.peek().getBiddingClient();
     }
 
@@ -85,7 +108,7 @@ public final class Auction {
      *
      * @return the double
      */
-    public double getHighestBid(){
+    public double getHighestBid() {
         return auctionBids.peek().getBidAmount();
     }
 
@@ -95,15 +118,12 @@ public final class Auction {
      * @param bid the bid
      * @return the boolean
      */
-    public boolean addNewBidder(Bid bid){
-        if(bid.getBidAmount() <= getHighestBid() || duration <= 0) //Bid must be more than current bid
+    public boolean addNewBidder(Bid bid) {
+        if (bid.getBidAmount() <= getHighestBid() || duration <= 0) //Bid must be more than current bid
             return false;
 
         addBidHistory(bid);
 
-        synchronized(this){
-            bidCount++;
-        }
         return true;
     }
 
@@ -113,7 +133,7 @@ public final class Auction {
      * @param <T>  the type parameter
      * @param bid the bid
      */
-    public <T extends Bid> void addBidHistory(T bid){
+    public <T extends Bid> void addBidHistory(T bid) {
         auctionBids.push(bid);
         //Send message to users
     }
@@ -123,8 +143,8 @@ public final class Auction {
      *
      * @return the int
      */
-    public synchronized int getBidCount(){
-        return bidCount;
+    public int getBidCount() {
+        return auctionBids.size();
     }
 
     /**
@@ -133,14 +153,14 @@ public final class Auction {
      * @param message the message
      */
 //Change to iterator to remove whilst iterating
-    public void broadcastAsyncMessageToViewers(String message){
-        synchronized(auctionSessions) {
+    public void broadcastAsyncMessageToViewers(String message) {
+        synchronized (auctionSessions) {
             Set<Client> closedSessions = new HashSet();
             auctionSessions.stream().forEach(session -> {
-                if(session.getSession().isOpen()){
-                session.getSession().getAsyncRemote().sendText(message);
-                }else{
-                   closedSessions.add(session);
+                if (session.getSession().isOpen()) {
+                    session.getSession().getAsyncRemote().sendText(message);
+                } else {
+                    closedSessions.add(session);
                 }
             });
             auctionSessions.removeAll(closedSessions);
@@ -152,7 +172,7 @@ public final class Auction {
      *
      * @return the string
      */
-    public String getAuctionItemName(){
+    public String getAuctionItemName() {
         return auctionItem.getItemName();
     }
 
@@ -161,7 +181,7 @@ public final class Auction {
      *
      * @return the double
      */
-    public double getAuctionItemPrice(){
+    public double getAuctionItemPrice() {
         return auctionItem.getItemPrice();
     }
 
@@ -170,24 +190,15 @@ public final class Auction {
      *
      * @return the long
      */
-    public long getTimeLeft(){
+    public long getTimeLeft() {
         return duration;
     }
 
     /**
      * Decrement duration.
      */
-    public void decrementDuration(){
+    public void decrementDuration() {
         duration--;
-    }
-
-    /**
-     * Set running.
-     *
-     * @param value the value
-     */
-    public void setRunning(boolean value){
-        isRunning = value;
     }
 
     /**
@@ -195,8 +206,26 @@ public final class Auction {
      *
      * @return the boolean
      */
-    public boolean isRunning(){
+    public boolean isRunning() {
         return isRunning;
+    }
+
+    /**
+     * Set running.
+     *
+     * @param value the value
+     */
+    public void setRunning(boolean value) {
+        isRunning = value;
+    }
+
+    /**
+     * Get auction type.
+     *
+     * @return the auction type
+     */
+    public AuctionType getAuctionType() {
+        return auctionType;
     }
 
     /**
@@ -204,40 +233,7 @@ public final class Auction {
      *
      * @return the auction item
      */
-    public AuctionItem getAuctionItem(){
+    public AuctionItem getAuctionItem() {
         return auctionItem;
     }
-
-    //The client this auction belongs to (may or may not be connected)
-    private Client client;
-
-    //The type of this auction.
-    private AuctionType auctionType;
-
-    //Specifies whether or not this auction is running
-    private volatile boolean isRunning;
-
-    //The duration, represented in seconds, that this auction should run for.
-    private volatile long duration;
-
-    //The title of this auction
-    private final String auctionTitle;
-
-    //An static autoIncrementing id used to identify each auction
-    private static final AtomicInteger surrogateAuctionID = new AtomicInteger();
-
-    //The id of this auction, obtained from the surrogate auction id.
-    private final int auctionID;
-
-    //The bid count of this auction
-    private int bidCount = 0;
-
-    //The auction item belonging to this auction
-    private final AuctionItem auctionItem;
-
-    //The set of clients viewing this auction
-    private final Set<Client> auctionSessions = Collections.synchronizedSet(new HashSet());
-
-    //The bids on this auction
-    private final Stack<Bid> auctionBids = new Stack<>();
 }

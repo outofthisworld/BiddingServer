@@ -1,6 +1,7 @@
 package auction.service;
 
 import auction.Auction;
+import auction.AuctionType;
 import util.Preconditions;
 
 import java.util.function.Predicate;
@@ -16,7 +17,6 @@ import java.util.function.Predicate;
  * should not not be null.
  */
 public enum AuctionFilters implements IAuctionFilter {
-
     /**
      * The AUCTION_ID.
      */
@@ -44,7 +44,6 @@ public enum AuctionFilters implements IAuctionFilter {
             };
         }
     },
-
     /**
      * The HIGHEST_BIDDER.
      */
@@ -56,7 +55,15 @@ public enum AuctionFilters implements IAuctionFilter {
                 return t.getHighestBidder() == object;
             };
         }
+    },
+
+    AUCTION_TYPE() {
+        @Override
+        public Predicate<? super Auction> filterFor(Object object) {
+            AuctionType auctionType = Preconditions.tryCast(AuctionType.class, object);
+            return (t) -> {
+                return t.getAuctionType() == auctionType;
+            };
+        }
     }
-
-
 }
