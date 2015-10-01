@@ -2,7 +2,7 @@ package auction.service;
 
 import auction.Auction;
 import auction.AuctionType;
-import util.Preconditions;
+import utilities.Preconditions;
 
 import java.util.function.Predicate;
 
