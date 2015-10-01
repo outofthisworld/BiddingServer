@@ -1,15 +1,25 @@
 package auction.service;
 
-import Util.Preconditions;
 import auction.Auction;
+import util.Preconditions;
 
 import java.util.function.Predicate;
 
+
 /**
- * Created by daleappleby on 1/10/15.
+ * The enum Auction filters.
+ *
+ * This enum represents convenience methods for filtering auctions,
+ * returning the predicates required to do common auction-filtering tasks.
+ *
+ * Objects supplied to the implemented {@link #filterFor(Object object);} via the {@link auction.service.IAuctionFilter}
+ * should not not be null.
  */
 public enum AuctionFilters implements IAuctionFilter {
 
+    /**
+     * The AUCTION_ID.
+     */
     AUCTION_ID() {
         @Override
         public Predicate<? super Auction> filterFor(Object object) {
@@ -20,19 +30,28 @@ public enum AuctionFilters implements IAuctionFilter {
         }
     },
 
+    /**
+     * A predicate used to determine if an auction is or is not running.
+     * The supplied object should be of boolean type specifying whether or not the
+     * {@link Auction#isRunning()} method of the {@link auction.Auction} class should be true or false.
+     */
     IS_RUNNING() {
         @Override
         public Predicate<? super Auction> filterFor(Object object) {
-            Preconditions.checkNotNull(this.getClass().getName(), object);
             boolean checkFor = Preconditions.tryCast(boolean.class, object);
             return (t) -> {
                 return t.isRunning() == checkFor;
             };
         }
     },
-    S_S() {
+
+    /**
+     * The HIGHEST_BIDDER.
+     */
+    HIGHEST_BIDDER() {
         @Override
         public Predicate<? super Auction> filterFor(Object object) {
+            Preconditions.checkNotNull(this.getClass().getName(), object);
             return (t) -> {
                 return t.getHighestBidder() == object;
             };
