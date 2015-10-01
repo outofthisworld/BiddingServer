@@ -19,7 +19,7 @@ public class ClientHandler {
     public ClientHandler() {}
 
     public void addClient(Session session) {
-        clients.put(session.getId(), new Client(session));
+        clients.put(session.getId(), new Client(name, session));
     }
 
     /**

@@ -1,7 +1,6 @@
 package auction.service;
 
 import auction.Auction;
-import auction.AuctionType;
 import utilities.Preconditions;
 
 import java.util.function.Predicate;
@@ -38,9 +37,9 @@ public enum AuctionFilters implements IAuctionFilter {
     IS_RUNNING() {
         @Override
         public Predicate<? super Auction> filterFor(Object object) {
-            boolean checkFor = Preconditions.tryCast(boolean.class, object);
+            Preconditions.checkNotNull(this.getClass().getName(), object);
             return (t) -> {
-                return t.isRunning() == checkFor;
+                return ((Boolean) t.isRunning()) == object;
             };
         }
     },
@@ -60,10 +59,10 @@ public enum AuctionFilters implements IAuctionFilter {
     AUCTION_TYPE() {
         @Override
         public Predicate<? super Auction> filterFor(Object object) {
-            AuctionType auctionType = Preconditions.tryCast(AuctionType.class, object);
             return (t) -> {
-                return t.getAuctionType() == auctionType;
+                return t.getAuctionType() == object;
             };
         }
     }
+
 }

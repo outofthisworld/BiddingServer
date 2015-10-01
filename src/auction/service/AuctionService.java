@@ -223,17 +223,20 @@ public class AuctionService {
         return this;
     }
 
+
     /**
      * Filter auctions.
      *
-     * @param predicate the predicate
+     * @param iAuctionFilter the i auction filter
+     * @param object the object
      * @param consumer the consumer
      * @return the auction service
      */
-    public AuctionService filterAuctions(Predicate<? super Auction> predicate, BiConsumer<? super Number, ? super Auction> consumer) {
+    public AuctionService filterAuctions(IAuctionFilter iAuctionFilter, Object object, Consumer<? super Auction> consumer) {
+        Predicate p = iAuctionFilter.filterFor(object);
         currentlyRunningAuctions.forEach((k, v) -> {
-            if (predicate.test(v)) {
-                consumer.accept(k, v);
+            if (p.test(v)) {
+                consumer.accept(v);
             }
         });
         return this;

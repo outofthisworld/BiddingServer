@@ -6,9 +6,12 @@ import javax.websocket.Session;
  * Created by daleappleby on 1/10/15.
  */
 public class Client {
+    private final String name;
     private final Session session;
+    private int rating;
 
-    public Client(Session session) {
+    public Client(String name, Session session) {
+        this.name = name;
         this.session = session;
     }
 
