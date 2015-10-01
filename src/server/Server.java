@@ -1,5 +1,6 @@
 package server;
 
+import auction.service.AuctionFilters;
 import auction.service.AuctionService;
 import server.client.ClientHandler;
 
@@ -12,6 +13,8 @@ public class Server {
 
     public Server() {
 
+        AUCTION_SERVICE.filterAuctions(AuctionFilters.AUCTION_ID.filterFor(1), (a) -> {
+        });
     }
 
 }
